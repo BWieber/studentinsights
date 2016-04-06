@@ -1,6 +1,6 @@
 require 'csv'
 
-class AnalyzeStaffTable < Struct.new(:path)
+class AnalyzeAssessments < Struct.new(:path)
 
   def contents
     encoding_options = {
@@ -28,14 +28,12 @@ class AnalyzeStaffTable < Struct.new(:path)
     value unless value == '\N'
   end
 
-  def get_educator_data_by_full_name(full_name)
-    data.select { |row| row[:stf_name_view] == full_name }[0].to_hash
+  def dibels
+    data.select { |row| row[:asd_name].include?('DIBELS') }
   end
 
-  def get_educators_missing_local_ids
-    data.select { |row| row[:stf_id_local].nil? }
-        .map { |row| row[:stf_name_view] }
-        .sort
+  def access
+    data.select { |row| row[:asd_name].include?('ACCESS') }
   end
 
 end
