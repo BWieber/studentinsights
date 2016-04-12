@@ -22,7 +22,7 @@
       queryParams: React.PropTypes.object.isRequired,
 
       // for testing
-      actions: PropTypes.actions, 
+      actions: PropTypes.actions,
       api: PropTypes.api
     },
 
@@ -49,6 +49,8 @@
         feed: serializedData.feed,
         chartData: serializedData.chartData,
         attendanceData: serializedData.attendanceData,
+        access: serializedData.access,
+        dibels: serializedData.dibels,
 
         // ui
         selectedColumnKey: queryParams.column || 'interventions',
@@ -153,7 +155,7 @@
         })
       });
     },
-    
+
     dateRange: function() {
       var nowMoment = this.props.nowMomentFn();
       return [nowMoment.clone().subtract(1, 'year').toDate(), nowMoment.toDate()];
@@ -169,7 +171,9 @@
           'eventNoteTypesIndex',
           'student',
           'feed',
+          'access',
           'chartData',
+          'dibels',
           'attendanceData',
           'selectedColumnKey',
           'requests'

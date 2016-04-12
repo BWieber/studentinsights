@@ -10,7 +10,7 @@ class SchoolsController < ApplicationController
 
     # TODO(kr) Read from cache, since this only updates daily
     student_hashes = log_timing('schools#show student_hashes') do
-      authorized_students.map {|student| student_hash_for_slicing(student) }
+      load_precomputed_student_hashes(Time.now, authorized_students.map(&:id))
     end
 
     # Read data stored StudentInsights each time, with no caching
@@ -37,6 +37,25 @@ class SchoolsController < ApplicationController
   end
 
   private
+
+  # This should always find a record, but if it doesn't we fall back to the
+  # raw query.
+  # Results an array of student_hashes.
+  def load_precomputed_student_hashes(time_now, authorized_student_ids)
+    begin
+      key = precomputed_student_hashes_key(time_now, authorized_student_ids)
+      doc = PrecomputedQueryDoc.find_by_key(key)
+      return JSON.parse(doc.json)['student_hashes'] unless doc.nil?
+    rescue ActiveRecord::StatementInvalid => err
+      logger.error "load_precomputed_student_hashes raised error #{err.inspect}"
+    end
+
+    # Fallback to performing the full query if something went wrong reading the 
+    # precomputed value
+    logger.error "falling back to full load_precomputed_student_hashes query for key: #{key}"
+    authorized_students = Student.find(authorized_student_ids)
+    authorized_students.map {|student| student_hash_for_slicing(student) }
+  end
 
   def serialized_data_for_star
     authorized_students = current_educator.students_for_school_overview(:student_assessments)
